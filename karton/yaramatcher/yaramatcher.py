@@ -96,9 +96,9 @@ class YaraMatcher(Karton):
         service = YaraMatcher(config, yara_rule_dir=args.rules)
         service.loop()
 
-    def __init__(self, config: Config, yara_rule_dir: Optional[str] = None) -> None:
-        self.yara_handler = YaraHandler(path=yara_rule_dir)
-        super().__init__(config)
+    def __init__(self, yara_rule_dir: Optional[str] = None, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.yara_handler = YaraHandler(path=yara_rule_dir or "rules")
 
     def scan_sample(self, sample: bytes) -> List[str]:
         # Get all matches for this sample
@@ -140,7 +140,7 @@ class YaraMatcher(Karton):
             for rootdir, _dirs, files in os.walk(tmpdir):
                 for filename in files:
                     # skip non-dump files
-                    if not re.match(r'^[a-f0-9]{4,16}_[a-f0-9]{16}$', filename):
+                    if not re.match(r"^[a-f0-9]{4,16}_[a-f0-9]{16}$", filename):
                         continue
 
                     with open(f"{rootdir}/{filename}", "rb") as dumpf:
