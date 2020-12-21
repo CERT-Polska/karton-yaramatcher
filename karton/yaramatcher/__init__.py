@@ -1,1 +1,1 @@
-from .yaramatcher import YaraMatcher, YaraHandler, normalize_rule_name  # noqa
+from .yaramatcher import YaraHandler, YaraMatcher, normalize_rule_name  # noqa

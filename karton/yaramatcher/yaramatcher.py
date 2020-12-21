@@ -6,7 +6,8 @@ import zipfile
 from typing import List, Optional
 
 import yara  # type: ignore
-from karton.core import Karton, Task, Config  # type: ignore
+from karton.core import Config, Karton, Task  # type: ignore
+
 from .__version__ import __version__
 
 log = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def normalize_rule_name(match: str) -> str:
 
 
 class YaraHandler:
-    """ Used to load and compile Yara rules from a folder and match them
+    """Used to load and compile Yara rules from a folder and match them
     against a sample.
     """
 
@@ -46,7 +47,7 @@ class YaraHandler:
         if not rule_paths:
             raise RuntimeError("The yara rule directory is empty")
 
-        # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/folder/rule2.yara", ...}
+        # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/folder/rul...
         rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
 
         log.info("Compiling Yara rules. This might take a few moments...")
@@ -127,7 +128,7 @@ class YaraMatcher(Karton):
         return yara_matches
 
     def process_drakrun(self, task: Task) -> List[str]:
-        self.log.info(f"Processing drakrun analysis")
+        self.log.info("Processing drakrun analysis")
         yara_matches: List[str] = []
 
         with tempfile.TemporaryDirectory() as tmpdir:
