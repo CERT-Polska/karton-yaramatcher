@@ -5,7 +5,7 @@ from karton.core import Resource, Task
 
 
 class TestUtils(unittest.TestCase):
-    def test_normalize_rule_name(self):
+    def test_normalize_rule_name(self) -> None:
         self.assertEqual("win_remcos", normalize_rule_name("win_remcos_auto"))
         self.assertEqual("win_agent_tesla", normalize_rule_name("win_agent_tesla_w0"))
         self.assertEqual("win_nymaim", normalize_rule_name("win_nymaim_a0"))
