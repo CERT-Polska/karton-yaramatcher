@@ -107,7 +107,7 @@ class YaraMatcher(Karton):
         rule_names = []
         for match in matches:
             rule_names.append("yara:{}".format(normalize_rule_name(match.rule)))
-        return sorted(rule_names)
+        return rule_names
 
     def process_cuckoo(self, task: Task) -> List[str]:
         yara_matches: List[str] = []
@@ -169,7 +169,7 @@ class YaraMatcher(Karton):
             self.log.info("Couldn't match any yara rules")
             return None
 
-        unique_matches = list(set(yara_matches))
+        unique_matches = sorted(list(set(yara_matches)))
 
         self.log.info(
             "Got %d yara hits in total with %s distinct names",

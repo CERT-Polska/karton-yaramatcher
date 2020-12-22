@@ -46,7 +46,7 @@ class YaraMatcherTestBasic(KartonTestCase):
         )
         expected_task = Task(
             {"type": "sample", "origin": "karton.yaramatcher", "stage": "analyzed"},
-            payload={"sample": res, "tags": ["yara:b", "yara:a"]},
+            payload={"sample": res, "tags": ["yara:a", "yara:b"]},
         )
         res_tasks = self.run_task(input_task)
         self.assertTasksEqual(res_tasks, [expected_task])
