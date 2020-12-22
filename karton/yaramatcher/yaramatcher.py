@@ -107,7 +107,7 @@ class YaraMatcher(Karton):
         rule_names = []
         for match in matches:
             rule_names.append("yara:{}".format(normalize_rule_name(match.rule)))
-        return rule_names
+        return sorted(rule_names)
 
     def process_cuckoo(self, task: Task) -> List[str]:
         yara_matches: List[str] = []
@@ -133,7 +133,7 @@ class YaraMatcher(Karton):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dumpsf = os.path.join(tmpdir, "dumps.zip")
-            self.current_task.get_resource("dumps.zip").download_to_file(dumpsf)
+            task.get_resource("dumps.zip").download_to_file(dumpsf)  # type: ignore
 
             zipf = zipfile.ZipFile(dumpsf)
             zipf.extractall(tmpdir)
@@ -150,14 +150,15 @@ class YaraMatcher(Karton):
 
         return yara_matches
 
-    def process(self, task: Task) -> None:
+    def process(self, task: Task) -> None:  # type: ignore
         headers = task.headers
         sample = task.get_resource("sample")
         yara_matches: List[str] = []
 
         if headers["type"] == "sample":
             self.log.info(f"Processing sample {sample.metadata['sha256']}")
-            yara_matches = self.scan_sample(sample.content)
+            if sample.content is not None:
+                yara_matches = self.scan_sample(sample.content)
         elif headers["type"] == "analysis":
             if headers["kind"] == "cuckoo1":
                 yara_matches += self.process_cuckoo(task)
