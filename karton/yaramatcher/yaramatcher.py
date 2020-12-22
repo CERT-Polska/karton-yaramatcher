@@ -6,7 +6,8 @@ import zipfile
 from typing import List, Optional
 
 import yara  # type: ignore
-from karton.core import Karton, Task, Config  # type: ignore
+from karton.core import Config, Karton, Task  # type: ignore
+
 from .__version__ import __version__
 
 log = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def normalize_rule_name(match: str) -> str:
 
 
 class YaraHandler:
-    """ Used to load and compile Yara rules from a folder and match them
+    """Used to load and compile Yara rules from a folder and match them
     against a sample.
     """
 
@@ -46,7 +47,7 @@ class YaraHandler:
         if not rule_paths:
             raise RuntimeError("The yara rule directory is empty")
 
-        # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/folder/rule2.yara", ...}
+        # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/folder/rul...
         rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
 
         log.info("Compiling Yara rules. This might take a few moments...")
@@ -96,9 +97,9 @@ class YaraMatcher(Karton):
         service = YaraMatcher(config, yara_rule_dir=args.rules)
         service.loop()
 
-    def __init__(self, config: Config, yara_rule_dir: Optional[str] = None) -> None:
-        self.yara_handler = YaraHandler(path=yara_rule_dir)
-        super().__init__(config)
+    def __init__(self, yara_rule_dir: Optional[str] = None, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.yara_handler = YaraHandler(path=yara_rule_dir or "rules")
 
     def scan_sample(self, sample: bytes) -> List[str]:
         # Get all matches for this sample
@@ -127,12 +128,12 @@ class YaraMatcher(Karton):
         return yara_matches
 
     def process_drakrun(self, task: Task) -> List[str]:
-        self.log.info(f"Processing drakrun analysis")
+        self.log.info("Processing drakrun analysis")
         yara_matches: List[str] = []
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dumpsf = os.path.join(tmpdir, "dumps.zip")
-            self.current_task.get_resource("dumps.zip").download_to_file(dumpsf)
+            task.get_resource("dumps.zip").download_to_file(dumpsf)  # type: ignore
 
             zipf = zipfile.ZipFile(dumpsf)
             zipf.extractall(tmpdir)
@@ -140,7 +141,7 @@ class YaraMatcher(Karton):
             for rootdir, _dirs, files in os.walk(tmpdir):
                 for filename in files:
                     # skip non-dump files
-                    if not re.match(r'^[a-f0-9]{4,16}_[a-f0-9]{16}$', filename):
+                    if not re.match(r"^[a-f0-9]{4,16}_[a-f0-9]{16}$", filename):
                         continue
 
                     with open(f"{rootdir}/{filename}", "rb") as dumpf:
@@ -149,14 +150,15 @@ class YaraMatcher(Karton):
 
         return yara_matches
 
-    def process(self, task: Task) -> None:
+    def process(self, task: Task) -> None:  # type: ignore
         headers = task.headers
         sample = task.get_resource("sample")
         yara_matches: List[str] = []
 
         if headers["type"] == "sample":
             self.log.info(f"Processing sample {sample.metadata['sha256']}")
-            yara_matches = self.scan_sample(sample.content)
+            if sample.content is not None:
+                yara_matches = self.scan_sample(sample.content)
         elif headers["type"] == "analysis":
             if headers["kind"] == "cuckoo1":
                 yara_matches += self.process_cuckoo(task)
@@ -167,7 +169,7 @@ class YaraMatcher(Karton):
             self.log.info("Couldn't match any yara rules")
             return None
 
-        unique_matches = list(set(yara_matches))
+        unique_matches = sorted(list(set(yara_matches)))
 
         self.log.info(
             "Got %d yara hits in total with %s distinct names",

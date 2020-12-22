@@ -3,6 +3,7 @@
 Scans analyses and samples with yara rules and spawns tasks with appropiate tags.
 
 Author: CERT.pl
+
 Maintainers: msm, nazywam
 
 **Consumes:**
