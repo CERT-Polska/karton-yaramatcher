@@ -41,7 +41,11 @@ Then install karton-yaramatcher from PyPi:
 
 ```shell
 $ pip install karton-yaramatcher
+```
 
+And run the karton service by pointing it to your [YARA](https://virustotal.github.io/yara/) rules repository:
+
+```shell
 $ karton-yaramatcher --rules yara_rule_directory
 ```
 
