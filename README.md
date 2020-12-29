@@ -2,9 +2,9 @@
 
 Scans analyses and samples with yara rules and spawns tasks with appropiate tags.
 
-Author: CERT.pl
+**Author**: CERT.pl
 
-Maintainers: msm, nazywam
+**Maintainers**: msm, nazywam
 
 **Consumes:**
 ```json
@@ -32,3 +32,21 @@ Maintainers: msm, nazywam
     "stage": "analyzed"
 }
 ```
+
+## Usage
+
+First of all, make sure you have setup the core system: https://github.com/CERT-Polska/karton
+
+Then install karton-yaramatcher from PyPi:
+
+```shell
+$ pip install karton-yaramatcher
+```
+
+And run the karton service by pointing it to your [YARA](https://virustotal.github.io/yara/) rules repository:
+
+```shell
+$ karton-yaramatcher --rules yara_rule_directory
+```
+
+![Co-financed by the Connecting Europe Facility by of the European Union](https://www.cert.pl/wp-content/uploads/2019/02/en_horizontal_cef_logo-1.png)
