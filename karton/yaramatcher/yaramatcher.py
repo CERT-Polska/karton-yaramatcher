@@ -94,7 +94,7 @@ class YaraMatcher(Karton):
         args = parser.parse_args()
 
         config = Config(args.config_file)
-        service = YaraMatcher(config, yara_rule_dir=args.rules)
+        service = YaraMatcher(config=config, yara_rule_dir=args.rules)
         service.loop()
 
     def __init__(self, yara_rule_dir: Optional[str] = None, *args, **kwargs) -> None:
