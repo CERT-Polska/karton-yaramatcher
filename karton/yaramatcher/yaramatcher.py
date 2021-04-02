@@ -157,7 +157,7 @@ class YaraMatcher(Karton):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dumpsf = os.path.join(tmpdir, "dumps.zip")
-            task.get_resource("dumps.zip").download_to_file(dumpsf)
+            task.get_resource("dumps.zip").download_to_file(dumpsf)  # type: ignore
 
             zipf = zipfile.ZipFile(dumpsf)
             zipf.extractall(tmpdir, pwd=b"infected")
