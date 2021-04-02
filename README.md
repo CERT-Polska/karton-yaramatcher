@@ -22,6 +22,9 @@ Scans analyses and samples with yara rules and spawns tasks with appropiate tags
 }, {
     "type": "analysis",
     "kind": "drakrun"
+}, {
+    "type": "analysis",
+    "kind": "joesandbox"
 }
 ```
 

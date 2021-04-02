@@ -80,6 +80,7 @@ class YaraMatcher(Karton):
         {"type": "sample", "stage": "recognized", "kind": "dump"},
         {"type": "analysis", "kind": "cuckoo1"},
         {"type": "analysis", "kind": "drakrun"},
+        {"type": "analysis", "kind": "joesandbox"},
     ]
 
     @classmethod
@@ -150,6 +151,25 @@ class YaraMatcher(Karton):
 
         return yara_matches
 
+    def process_joesandbox(self, task: Task) -> List[str]:
+        self.log.info("Processing joesandbox analysis")
+        yara_matches: List[str] = []
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dumpsf = os.path.join(tmpdir, "dumps.zip")
+            task.get_resource("dumps.zip").download_to_file(dumpsf)
+
+            zipf = zipfile.ZipFile(dumpsf)
+            zipf.extractall(tmpdir, pwd=b"infected")
+
+            for rootdir, _dirs, files in os.walk(tmpdir):
+                for filename in files:
+                    with open(f"{rootdir}/{filename}", "rb") as dumpf:
+                        content = dumpf.read()
+                    yara_matches += self.scan_sample(content)
+
+        return yara_matches
+
     def process(self, task: Task) -> None:  # type: ignore
         headers = task.headers
         sample = task.get_resource("sample")
@@ -164,6 +184,8 @@ class YaraMatcher(Karton):
                 yara_matches += self.process_cuckoo(task)
             elif headers["kind"] == "drakrun":
                 yara_matches += self.process_drakrun(task)
+            elif headers["kind"] == "joesandbox":
+                yara_matches += self.process_joesandbox(task)
 
         if not yara_matches:
             self.log.info("Couldn't match any yara rules")
