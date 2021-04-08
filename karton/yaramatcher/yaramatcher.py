@@ -1,8 +1,6 @@
 import logging
 import os
 import re
-import tempfile
-import zipfile
 from typing import List, Optional
 
 import yara  # type: ignore
@@ -78,9 +76,7 @@ class YaraMatcher(Karton):
     filters = [
         {"type": "sample", "stage": "recognized", "kind": "runnable"},
         {"type": "sample", "stage": "recognized", "kind": "dump"},
-        {"type": "analysis", "kind": "cuckoo1"},
-        {"type": "analysis", "kind": "drakrun"},
-        {"type": "analysis", "kind": "joesandbox"},
+        {"type": "analysis"},
     ]
 
     @classmethod
@@ -110,62 +106,18 @@ class YaraMatcher(Karton):
             rule_names.append("yara:{}".format(normalize_rule_name(match.rule)))
         return rule_names
 
-    def process_cuckoo(self, task: Task) -> List[str]:
-        yara_matches: List[str] = []
-        analysis = task.get_payload("analysis")
-        self.log.info(f"Processing cuckoo analysis {analysis.name}")
-
-        with analysis.extract_temporary() as analysis_dir:
-            dump_dir = f"{analysis_dir}/dumps"
-            for rootdir, _dirs, files in os.walk(dump_dir):
-                for filename in files:
-                    if filename.endswith(".txt") or filename.endswith(".metadata"):
-                        continue
-                    self.log.debug(f"Checking {filename}")
-                    with open(f"{rootdir}/{filename}", "rb") as dumpf:
-                        content = dumpf.read()
-                    yara_matches += self.scan_sample(content)
-
-        return yara_matches
-
-    def process_drakrun(self, task: Task) -> List[str]:
-        self.log.info("Processing drakrun analysis")
+    def process_analysis(self, task: Task) -> List[str]:
+        self.log.info("Processing analysis")
         yara_matches: List[str] = []
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            dumpsf = os.path.join(tmpdir, "dumps.zip")
-            task.get_resource("dumps.zip").download_to_file(dumpsf)  # type: ignore
+        dumps = task.get_resource("dumps.zip")
+        dumps_metadata = task.get_payload("dumps_metadata")
 
-            zipf = zipfile.ZipFile(dumpsf)
-            zipf.extractall(tmpdir)
-
-            for rootdir, _dirs, files in os.walk(tmpdir):
-                for filename in files:
-                    # skip non-dump files
-                    if not re.match(r"^[a-f0-9]{4,16}_[a-f0-9]{16}$", filename):
-                        continue
-
-                    with open(f"{rootdir}/{filename}", "rb") as dumpf:
-                        content = dumpf.read()
-                    yara_matches += self.scan_sample(content)
-
-        return yara_matches
-
-    def process_joesandbox(self, task: Task) -> List[str]:
-        self.log.info("Processing joesandbox analysis")
-        yara_matches: List[str] = []
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            dumpsf = os.path.join(tmpdir, "dumps.zip")
-            task.get_resource("dumps.zip").download_to_file(dumpsf)  # type: ignore
-
-            zipf = zipfile.ZipFile(dumpsf)
-            zipf.extractall(tmpdir, pwd=b"infected")
-
-            for rootdir, _dirs, files in os.walk(tmpdir):
-                for filename in files:
-                    with open(f"{rootdir}/{filename}", "rb") as dumpf:
-                        content = dumpf.read()
+        with dumps.extract_temporary() as tmpdir:  # type: ignore
+            for dump_metadata in dumps_metadata:
+                dump_path = os.path.join(tmpdir, dump_metadata["filename"])
+                with open(dump_path, "rb") as dumpf:
+                    content = dumpf.read()
                     yara_matches += self.scan_sample(content)
 
         return yara_matches
@@ -180,12 +132,7 @@ class YaraMatcher(Karton):
             if sample.content is not None:
                 yara_matches = self.scan_sample(sample.content)
         elif headers["type"] == "analysis":
-            if headers["kind"] == "cuckoo1":
-                yara_matches += self.process_cuckoo(task)
-            elif headers["kind"] == "drakrun":
-                yara_matches += self.process_drakrun(task)
-            elif headers["kind"] == "joesandbox":
-                yara_matches += self.process_joesandbox(task)
+            yara_matches += self.process_analysis(task)
 
         if not yara_matches:
             self.log.info("Couldn't match any yara rules")

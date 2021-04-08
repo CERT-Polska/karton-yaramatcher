@@ -17,16 +17,12 @@ Scans analyses and samples with yara rules and spawns tasks with appropiate tags
     "stage": "recognized",
     "kind": "dump"
 }, {
-    "type": "analysis",
-    "kind": "cuckoo1"
-}, {
-    "type": "analysis",
-    "kind": "drakrun"
-}, {
-    "type": "analysis",
-    "kind": "joesandbox"
+    "type": "analysis"
 }
 ```
+
+For the analysis type, we run yara rules against all dumps passed in `dumps.zip` resource
+and append result tags to the parent sample.
 
 **Produces:**
 ```json
