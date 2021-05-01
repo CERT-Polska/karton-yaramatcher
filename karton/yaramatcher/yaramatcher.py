@@ -3,7 +3,7 @@ import re
 import sys
 import zipfile
 import logging
-import tempfil
+import tempfile
 from typing import List, Optional
 import yara  # type: ignore
 from karton.core import Config, Karton, Task  # type: ignore
@@ -40,6 +40,7 @@ class YaraHandler:
         Loads Pre-Compiled YARA Rules from a File
         """
         self.rules = yara.load(filepath=compiled)
+        log.info(f'Successfuly loaded {compiled} compiled YARA rules')
 
     def compile_rules(self, path):
         """
@@ -57,7 +58,7 @@ class YaraHandler:
         rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
         log.info('Compiling YARA rules. This might take a few moments...')
         self.rules = yara.compile(filepaths=rules_dict)
-        log.info(f'Loaded {len(rules_paths)}  rules')
+        log.info('Loaded {count} rules'.format(count=len(rule_paths)))
 
     def get_matches(self, content) -> yara.Rules:
         """
@@ -66,11 +67,9 @@ class YaraHandler:
         return self.rules.match(data=content)
 
 class YaraMatcher(Karton):
-
     """
     Tags samples and analysis results using matched YARA rules.
     """
-
     identity = "karton.yaramatcher"
     persistent = True
     version = __version__
@@ -99,10 +98,14 @@ class YaraMatcher(Karton):
             log.error('--rules or --compiled-rules argument is required')
             parser.print_help()
             sys.exit(1)
+        if args.rules is not None and args.compiled_rules is not None:
+            log.error('--rules or --compiled-rules must be specified, not both')
+            parser.print_help()
+            sys.exit(1)
         service = YaraMatcher(
             config=config,
             yara_rule_dir=args.rules,
-            yara_compiled_rules=args.yara_compiled_rules)
+            yara_compiled_rules=args.compiled_rules)
         service.loop()
 
     def __init__(
@@ -114,7 +117,7 @@ class YaraMatcher(Karton):
         super().__init__(*args, **kwargs)
         self.yara_handler = YaraHandler(
             path=yara_rule_dir,
-            yara_compiled_rules=yara_compiled_rules)
+            compiled=yara_compiled_rules)
 
     def scan_sample(self, sample: bytes) -> List[str]:
         """
@@ -139,7 +142,7 @@ class YaraMatcher(Karton):
                     log.debug(f"Checking {filename}")
                     with open(f"{rootdir}/{filename}", "rb") as dumpf:
                         content = dumpf.read()
-                    yara_matches += self.scan_sample(content
+                    yara_matches += self.scan_sample(content)
         return yara_matches
 
     def process_drakrun(self, task: Task) -> List[str]:
@@ -158,7 +161,7 @@ class YaraMatcher(Karton):
 
                     with open(f"{rootdir}/{filename}", "rb") as dumpf:
                         content = dumpf.read()
-                    yara_matches += self.scan_sample(content
+                    yara_matches += self.scan_sample(content)
         return yara_matches
 
     def process_joesandbox(self, task: Task) -> List[str]:
