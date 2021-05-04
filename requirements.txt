@@ -1,2 +1,2 @@
-karton-core==4.0.5
-yara-python==4.0.2
+karton-core>=4.2.0
+yara-python>=4.0.2
