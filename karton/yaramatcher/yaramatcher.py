@@ -23,6 +23,13 @@ def normalize_rule_name(match: str) -> str:
     return match
 
 
+def is_safe_path(basedir, path):
+    """
+    Check if path points to a file within basedir.
+    """
+    return basedir == os.path.commonpath((basedir, os.path.realpath(path)))
+
+
 class YaraHandler:
     """Used to load and compile Yara rules from a folder and match them
     against a sample.
@@ -116,6 +123,9 @@ class YaraMatcher(Karton):
         with dumps.extract_temporary() as tmpdir:  # type: ignore
             for dump_metadata in dumps_metadata:
                 dump_path = os.path.join(tmpdir, dump_metadata["filename"])
+                if not is_safe_path(tmpdir, dump_path):
+                    self.log.warning(f"Path traversal attempt: {dump_path}")
+                    continue
                 with open(dump_path, "rb") as dumpf:
                     content = dumpf.read()
                     yara_matches += self.scan_sample(content)
