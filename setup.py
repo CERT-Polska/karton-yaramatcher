@@ -14,6 +14,7 @@ setup(
     name="karton-yaramatcher",
     version=version_info["__version__"],
     description="File and analysis artifacts yara matcher for Karton framework",
+    url="https://github.com/CERT-Polska/karton-yaramatcher/"
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
     namespace_packages=["karton"],
