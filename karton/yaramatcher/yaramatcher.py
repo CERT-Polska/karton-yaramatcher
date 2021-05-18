@@ -2,6 +2,7 @@ import logging
 import os
 import re
 from typing import List, Optional
+from pathlib import Path
 
 import yara  # type: ignore
 from karton.core import Config, Karton, Task  # type: ignore
@@ -21,13 +22,6 @@ def normalize_rule_name(match: str) -> str:
         if re.match(ignore_pattern, parts[-1]):
             return "_".join(parts[:-1])
     return match
-
-
-def is_safe_path(basedir, path):
-    """
-    Check if path points to a file within basedir.
-    """
-    return basedir == os.path.commonpath((basedir, os.path.realpath(path)))
 
 
 class YaraHandler:
@@ -122,9 +116,8 @@ class YaraMatcher(Karton):
 
         with dumps.extract_temporary() as tmpdir:  # type: ignore
             for dump_metadata in dumps_metadata:
-                dump_path = os.path.join(tmpdir, dump_metadata["filename"])
-                if not is_safe_path(tmpdir, dump_path):
-                    self.log.warning(f"Path traversal attempt: {dump_path}")
+                dump_path = (Path(tmpdir) / Path(dump_metadata["filename"])).resolve()
+                if not str(dump_path).startswith(tmpdir):
                     continue
                 with open(dump_path, "rb") as dumpf:
                     content = dumpf.read()
