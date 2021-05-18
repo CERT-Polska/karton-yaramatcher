@@ -1,8 +1,8 @@
 import logging
 import os
 import re
-from typing import List, Optional
 from pathlib import Path
+from typing import List, Optional
 
 import yara  # type: ignore
 from karton.core import Config, Karton, Task  # type: ignore
