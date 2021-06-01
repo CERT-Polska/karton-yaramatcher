@@ -47,8 +47,7 @@ following attributes are:
 - `base_address` - hex-encoded dump base address (leading `0x` is supported);
 You can specify multiple entries for the same file if the same memory dump was found on different base addresses.
 
-For the analysis type, yaramatcher runs rules against all dumps passed in `dumps.zip` resource and append result tags
-to the parent sample.
+For the analysis type, yaramatcher runs rules against all dumps described in `dumps_metadata` payload. It then appends result tags to the parent sample.
 
 **Produces:**
 ```json
