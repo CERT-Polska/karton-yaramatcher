@@ -21,7 +21,7 @@ Scans analyses and samples with yara rules and spawns tasks with appropiate tags
 }
 ```
 
-While `sample` type is self explanatory, the `analysis` type might be confusing. The `analysis` task is an output from
+While `sample` type is self explanatory, the `analysis` type might be a bit more complicated. The `analysis` task is an output from
 one of sandboxes: `drakvuf-sandbox`, `cuckoo`, or `joesandbox`. Analysis is a `sample` with additional memory dumps
 attached.
 
@@ -41,10 +41,10 @@ task = Task(
     }
 )
 ```
-where `dumps_metadata` contains information about filename and base address for every memory dump in `dumps.zip`. The
+where `dumps_metadata` contains information about filename and base address of every memory dump in `dumps.zip`. The
 following attributes are:
-- `filename` which is relative path to the dumps.zip contents;
-- `base_address` which hex-encoded base address for dump (leading `0x` is supported)
+- `filename` - a relative path to dump in the dumps.zip archive;
+- `base_address` - hex-encoded dump base address (leading `0x` is supported);
 You can specify multiple entries for the same file if the same memory dump was found on different base addresses.
 
 For the analysis type, yaramatcher runs rules against all dumps passed in `dumps.zip` resource and append result tags
