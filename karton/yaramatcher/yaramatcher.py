@@ -119,9 +119,7 @@ class YaraMatcher(Karton):
                 dump_path = (Path(tmpdir) / Path(dump_metadata["filename"])).resolve()
                 if not str(dump_path).startswith(tmpdir):
                     continue
-                with open(dump_path, "rb") as dumpf:
-                    content = dumpf.read()
-                    yara_matches += self.scan_sample(content)
+                yara_matches += self.scan_sample(dump_path.read_bytes())
 
         return yara_matches
 
