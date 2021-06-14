@@ -4,6 +4,7 @@ import re
 import tempfile
 import zipfile
 from typing import List, Optional
+from minio import Minio
 
 import yara  # type: ignore
 from karton.core import Config, Karton, Task  # type: ignore
@@ -26,11 +27,11 @@ def normalize_rule_name(match: str) -> str:
 
 
 class YaraHandler:
-    """Used to load and compile Yara rules from a folder and match them
+    """Used to load and compile Yara rules from a folder or your karton S3 storage and match them
     against a sample.
     """
 
-    def __init__(self, path: Optional[str] = None) -> None:
+    def __init__(self, path: Optional[str] = None, bucket: Optional[str] = None) -> None:
         super().__init__()
         # load and compile all Yara rules from a folder
         yara_path = path or "rules"
@@ -43,6 +44,26 @@ class YaraHandler:
                 if not f.endswith(".yar") and not f.endswith(".yara"):
                     continue
                 rule_paths.append(os.path.join(root, f))
+
+        if bucket:
+            # load all Yara rules from a karton S3 bucket
+            self.minio = Minio(
+                endpoint=os.environ['KARTON_MINIO_ADDRESS'],
+                access_key=os.environ['KARTON_MINIO_ACCESS_KEY'],
+                secret_key=os.environ['KARTON_MINIO_SECRET_KEY'],
+                secure=bool(int(os.environ['KARTON_MINIO_SECURE']))
+
+            )
+
+            # Recursively collect paths for yara rules in the bucket
+            objects = self.minio.list_objects(bucket, recursive=True)
+
+            for obj in objects:
+                self.minio.fget_object(bucket, obj.object_name, os.path.join("/tmp", obj.object_name))
+                # Ignore non Yara files based on extension
+                if not obj.object_name.endswith(".yar") and not obj.object_name.endswith(".yara"):
+                    continue
+                rule_paths.append(os.path.join("/tmp", obj.object_name))
 
         if not rule_paths:
             raise RuntimeError("The yara rule directory is empty")
@@ -87,6 +108,7 @@ class YaraMatcher(Karton):
     def args_parser(cls):
         parser = super().args_parser()
         parser.add_argument("--rules", help="Yara rules directory", default="rules")
+        parser.add_argument("--bucket", help="Yara rules bucket")
         return parser
 
     @classmethod
@@ -95,12 +117,13 @@ class YaraMatcher(Karton):
         args = parser.parse_args()
 
         config = Config(args.config_file)
-        service = YaraMatcher(config=config, yara_rule_dir=args.rules)
+        service = YaraMatcher(config=config, yara_rule_dir=args.rules, yara_rule_bucket=args.bucket)
         service.loop()
 
-    def __init__(self, yara_rule_dir: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, yara_rule_dir: Optional[str] = None, yara_rule_bucket: Optional[str] = None, *args,
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.yara_handler = YaraHandler(path=yara_rule_dir or "rules")
+        self.yara_handler = YaraHandler(path=yara_rule_dir or "rules", bucket=yara_rule_bucket)
 
     def scan_sample(self, sample: bytes) -> List[str]:
         # Get all matches for this sample
