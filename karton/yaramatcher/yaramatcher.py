@@ -4,10 +4,10 @@ import re
 import tempfile
 import zipfile
 from typing import List, Optional
-from minio import Minio
 
 import yara  # type: ignore
 from karton.core import Config, Karton, Task  # type: ignore
+from minio import Minio
 
 from .__version__ import __version__
 
