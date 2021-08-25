@@ -17,16 +17,37 @@ Scans analyses and samples with yara rules and spawns tasks with appropiate tags
     "stage": "recognized",
     "kind": "dump"
 }, {
-    "type": "analysis",
-    "kind": "cuckoo1"
-}, {
-    "type": "analysis",
-    "kind": "drakrun"
-}, {
-    "type": "analysis",
-    "kind": "joesandbox"
+    "type": "analysis"
 }
 ```
+
+While `sample` type is self explanatory, the `analysis` type might be a bit more complicated. The `analysis` task is an output from
+one of sandboxes: `drakvuf-sandbox`, `cuckoo`, or `joesandbox`. Analysis is a `sample` with additional memory dumps
+attached.
+
+The `analysis` type task is expected to be in format:
+```
+task = Task(
+    headers={"type": "analysis"}
+    payload={
+        "sample": <sample>,
+        "dumps.zip": Resource.from_directory("dumps.zip", dumps_path.as_posix()),
+        "dumps_metadata": [
+            {"filename": <dump1_filename>, "base_address": <dump1_base_address>},
+            {"filename": <dump2_filename>, "base_address": <dump2_base_address>},
+            {"filename": <dump3_filename>, "base_address": <dump3_base_address>},
+            [...]
+        ],
+    }
+)
+```
+where `dumps_metadata` contains information about filename and base address of every memory dump in `dumps.zip`. The
+following attributes are:
+- `filename` - a relative path to dump in the dumps.zip archive;
+- `base_address` - hex-encoded dump base address (leading `0x` is supported);
+You can specify multiple entries for the same file if the same memory dump was found on different base addresses.
+
+For the analysis type, yaramatcher runs rules against all dumps described in `dumps_metadata` payload. It then appends result tags to the parent sample.
 
 **Produces:**
 ```json
