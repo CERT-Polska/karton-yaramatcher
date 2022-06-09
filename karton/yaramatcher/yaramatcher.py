@@ -60,7 +60,7 @@ class YaraHandler:
         log.info("Compiling Yara rules. This might take a few moments...")
         # Hold yara.Rules object with the compiled rules
         self.rules = yara.compile(filepaths=rules_dict)
-        log.info("Loaded {} yara rules".format(len(rule_paths)))
+        log.info("Loaded yara rules from {} files".format(len(rules_dict)))
 
     def get_matches(self, content) -> yara.Rules:
         """Use the compiled Yara rules and scan them against a sample
