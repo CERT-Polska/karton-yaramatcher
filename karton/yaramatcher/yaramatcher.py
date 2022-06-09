@@ -49,7 +49,7 @@ class YaraHandler:
             if not rule_paths:
                 raise RuntimeError("The yara rule directory is empty")
 
-            # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/folder/rul...
+            # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/dir/rul...
             rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
         # if it's an index file (e.g., https://github.com/Yara-Rules/rules)
         elif os.path.isfile(yara_path) and yara_path.endswith(".yar"):
