@@ -53,7 +53,7 @@ class YaraHandler:
             rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
         # if it's an index file (e.g., https://github.com/Yara-Rules/rules)
         elif os.path.isfile(yara_path) and yara_path.endswith(".yar"):
-            rules_dict = { "0": yara_path }
+            rules_dict = {"0": yara_path}
         else:
             raise RuntimeError("Please supply a valid path to Yara rule(s)")
 
