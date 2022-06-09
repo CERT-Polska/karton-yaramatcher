@@ -36,24 +36,31 @@ class YaraHandler:
         yara_path = path or "rules"
         rule_paths = []
 
-        for root, _, f_names in os.walk(yara_path):
-            # Recursively collect paths for yara rules in the folder
-            for f in f_names:
-                # Ignore non Yara files based on extension
-                if not f.endswith(".yar") and not f.endswith(".yara"):
-                    continue
-                rule_paths.append(os.path.join(root, f))
+        # if it's a directory, then walk recursively
+        if os.path.isdir(yara_path):
+            for root, _, f_names in os.walk(yara_path):
+                # Recursively collect paths for yara rules in the folder
+                for f in f_names:
+                    # Ignore non Yara files based on extension
+                    if not f.endswith(".yar") and not f.endswith(".yara"):
+                        continue
+                    rule_paths.append(os.path.join(root, f))
 
-        if not rule_paths:
-            raise RuntimeError("The yara rule directory is empty")
+            if not rule_paths:
+                raise RuntimeError("The yara rule directory is empty")
 
-        # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/folder/rul...
-        rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
+            # Convert the list to a dict {"0": "rules/rule1.yar", "1": "rules/dir/rul...
+            rules_dict = {str(i): rule_paths[i] for i in range(0, len(rule_paths))}
+        # if it's an index file (e.g., https://github.com/Yara-Rules/rules)
+        elif os.path.isfile(yara_path) and yara_path.endswith(".yar"):
+            rules_dict = {"0": yara_path}
+        else:
+            raise RuntimeError("Please supply a valid path to Yara rule(s)")
 
         log.info("Compiling Yara rules. This might take a few moments...")
         # Hold yara.Rules object with the compiled rules
         self.rules = yara.compile(filepaths=rules_dict)
-        log.info("Loaded {} yara rules".format(len(rule_paths)))
+        log.info("Loaded yara rules from {} files".format(len(rules_dict)))
 
     def get_matches(self, content) -> yara.Rules:
         """Use the compiled Yara rules and scan them against a sample
