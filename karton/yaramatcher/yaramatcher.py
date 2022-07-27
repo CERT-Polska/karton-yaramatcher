@@ -177,7 +177,7 @@ class YaraMatcher(Karton):
 
         return yara_matches
 
-    def process(self, task: Task) -> None:  # type: ignore
+    def process(self, task: Task) -> None:
         headers = task.headers
         sample = task.get_resource("sample")
         yara_matches: List[str] = []
