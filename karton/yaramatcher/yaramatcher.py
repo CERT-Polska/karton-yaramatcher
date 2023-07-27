@@ -104,7 +104,7 @@ class YaraMatcher(Karton):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.yara_handler = YaraHandler(
-            path=self.config.get("yaramatcher", "rules", "rules")
+            path=self.config.get("yaramatcher", "rules", fallback="rules")
         )
 
     def scan_sample(self, sample: bytes) -> List[str]:
