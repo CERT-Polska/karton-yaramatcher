@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 import re
@@ -96,18 +97,15 @@ class YaraMatcher(Karton):
         return parser
 
     @classmethod
-    def main(cls):
-        parser = cls.args_parser()
-        args = parser.parse_args()
+    def config_from_args(cls, config: Config, args: argparse.Namespace) -> None:
+        super().config_from_args(config, args)
+        config.load_from_dict({"yaramatcher": {"rules": args.rules}})
 
-        config = Config(args.config_file)
-        cls.config_from_args(config, args)
-        service = cls(config=config, yara_rule_dir=args.rules)
-        service.loop()
-
-    def __init__(self, yara_rule_dir: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.yara_handler = YaraHandler(path=yara_rule_dir or "rules")
+        self.yara_handler = YaraHandler(
+            path=self.config.get("yaramatcher", "rules", "rules")
+        )
 
     def scan_sample(self, sample: bytes) -> List[str]:
         # Get all matches for this sample
