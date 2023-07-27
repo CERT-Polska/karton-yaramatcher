@@ -1,7 +1,13 @@
 import unittest
 from karton.yaramatcher import YaraMatcher, normalize_rule_name
-from karton.core.test import KartonTestCase
+from karton.core.test import KartonTestCase, ConfigMock
 from karton.core import Resource, Task
+
+
+class YaraMatcherConfigMock(ConfigMock):
+    def __init__(self):
+        super().__init__()
+        self._config["yaramatcher"] = {"rules": "tests/testdata/rules"}
 
 
 class TestUtils(unittest.TestCase):
@@ -14,7 +20,7 @@ class TestUtils(unittest.TestCase):
 
 class YaraMatcherTestBasic(KartonTestCase):
     karton_class = YaraMatcher
-    kwargs = {"yara_rule_dir": "tests/testdata/rules"}
+    config = YaraMatcherConfigMock()
 
     def test_pass(self) -> None:
         res = Resource("sample", b"z")
