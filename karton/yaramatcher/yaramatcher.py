@@ -6,7 +6,7 @@ import zipfile
 from typing import List, Optional
 
 import yara  # type: ignore
-from karton.core import Config, Karton, Task  # type: ignore
+from karton.core import Config, Karton, Task
 
 from .__version__ import __version__
 
@@ -31,7 +31,6 @@ class YaraHandler:
     """
 
     def __init__(self, path: Optional[str] = None) -> None:
-        super().__init__()
         # load and compile all Yara rules from a folder
         yara_path = path or "rules"
         rule_paths = []
@@ -102,7 +101,8 @@ class YaraMatcher(Karton):
         args = parser.parse_args()
 
         config = Config(args.config_file)
-        service = YaraMatcher(config=config, yara_rule_dir=args.rules)
+        cls.config_from_args(config, args)
+        service = cls(config=config, yara_rule_dir=args.rules)
         service.loop()
 
     def __init__(self, yara_rule_dir: Optional[str] = None, *args, **kwargs) -> None:
