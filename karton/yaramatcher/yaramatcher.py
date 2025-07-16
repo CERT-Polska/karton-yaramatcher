@@ -15,8 +15,8 @@ log = logging.getLogger(__name__)
 
 
 def normalize_rule_name(match: str) -> str:
-    """Malpedia's rule names have their own unique naming convention. This function is used
-    for normalizing the naming by removing Malpedia's unique suffixes.
+    """Malpedia's rule names have their own unique naming convention. This function is
+    used for normalizing the naming by removing Malpedia's unique suffixes.
     """
 
     parts = match.split("_")
