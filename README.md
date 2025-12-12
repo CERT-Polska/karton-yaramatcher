@@ -18,9 +18,6 @@ Scans analyses and samples with yara rules and spawns tasks with appropiate tags
     "kind": "dump"
 }, {
     "type": "analysis",
-    "kind": "cuckoo1"
-}, {
-    "type": "analysis",
     "kind": "drakrun"
 }, {
     "type": "analysis",

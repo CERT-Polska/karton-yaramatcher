@@ -114,24 +114,6 @@ class YaraMatcher(Karton):
             rule_names.append("yara:{}".format(normalize_rule_name(match.rule)))
         return rule_names
 
-    def process_cuckoo(self, task: Task) -> List[str]:
-        yara_matches: List[str] = []
-        analysis = task.get_payload("analysis")
-        self.log.info(f"Processing cuckoo analysis {analysis.name}")
-
-        with analysis.extract_temporary() as analysis_dir:
-            dump_dir = f"{analysis_dir}/dumps"
-            for rootdir, _dirs, files in os.walk(dump_dir):
-                for filename in files:
-                    if filename.endswith(".txt") or filename.endswith(".metadata"):
-                        continue
-                    self.log.debug(f"Checking {filename}")
-                    with open(f"{rootdir}/{filename}", "rb") as dumpf:
-                        content = dumpf.read()
-                    yara_matches += self.scan_sample(content)
-
-        return yara_matches
-
     def process_drakrun(self, task: Task) -> List[str]:
         self.log.info("Processing drakrun analysis")
         yara_matches: List[str] = []
@@ -184,9 +166,7 @@ class YaraMatcher(Karton):
             if sample.content is not None:
                 yara_matches = self.scan_sample(sample.content)
         elif headers["type"] == "analysis":
-            if headers["kind"] == "cuckoo1":
-                yara_matches += self.process_cuckoo(task)
-            elif headers["kind"] == "drakrun":
+            if headers["kind"] == "drakrun":
                 yara_matches += self.process_drakrun(task)
             elif headers["kind"] == "joesandbox":
                 yara_matches += self.process_joesandbox(task)
