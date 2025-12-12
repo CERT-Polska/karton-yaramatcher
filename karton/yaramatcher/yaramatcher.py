@@ -85,7 +85,6 @@ class YaraMatcher(Karton):
     filters = [
         {"type": "sample", "stage": "recognized", "kind": "runnable"},
         {"type": "sample", "stage": "recognized", "kind": "dump"},
-        {"type": "analysis", "kind": "cuckoo1"},
         {"type": "analysis", "kind": "drakrun"},
         {"type": "analysis", "kind": "joesandbox"},
     ]
