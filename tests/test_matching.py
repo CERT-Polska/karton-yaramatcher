@@ -39,7 +39,7 @@ class YaraMatcherTestBasic(KartonTestCase):
         )
         expected_task = Task(
             {"type": "sample", "origin": "karton.yaramatcher", "stage": "analyzed"},
-            payload={"sample": res, "tags": ["yara:a"]},
+            payload={"sample": res, "tags": ["yara:a"], "yara-matches": {"a": ["ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"]}},
         )
         res_tasks = self.run_task(input_task)
         self.assertTasksEqual(res_tasks, [expected_task])
@@ -52,7 +52,11 @@ class YaraMatcherTestBasic(KartonTestCase):
         )
         expected_task = Task(
             {"type": "sample", "origin": "karton.yaramatcher", "stage": "analyzed"},
-            payload={"sample": res, "tags": ["yara:a", "yara:b"]},
+            payload={ "sample": res, "tags": ["yara:a", "yara:b"], "yara-matches": {
+                "a": ["fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603"], 
+                "b": ["fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603"],
+                }
+            },
         )
         res_tasks = self.run_task(input_task)
         self.assertTasksEqual(res_tasks, [expected_task])
