@@ -88,6 +88,9 @@ class YaraMatcher(Karton):
         {"type": "analysis", "kind": "drakrun"},
         {"type": "analysis", "kind": "joesandbox"},
     ]
+    egress_filters = [
+        {"type": "sample", "stage": "analyzed"},
+    ]
 
     @classmethod
     def args_parser(cls):
@@ -162,7 +165,7 @@ class YaraMatcher(Karton):
         yara_matches: List[str] = []
 
         if headers["type"] == "sample":
-            self.log.info(f"Processing sample {sample.metadata['sha256']}")
+            self.log.info(f"Processing sample {sample.sha256}")
             if sample.content is not None:
                 yara_matches = self.scan_sample(sample.content)
         elif headers["type"] == "analysis":

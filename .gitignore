@@ -8,3 +8,5 @@ venv/
 config.py
 karton.ini
 
+build/
+*.egg-info
