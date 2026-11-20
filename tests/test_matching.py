@@ -52,7 +52,7 @@ class YaraMatcherTestBasic(KartonTestCase):
         )
         expected_task = Task(
             {"type": "sample", "origin": "karton.yaramatcher", "stage": "analyzed"},
-            payload={ "sample": res, "tags": ["yara:a", "yara:b"], "yara-matches": {
+            payload={ "sample": res, "tags": ["yara:b", "yara:a"], "yara-matches": {
                 "a": ["fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603"], 
                 "b": ["fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603"],
                 }
