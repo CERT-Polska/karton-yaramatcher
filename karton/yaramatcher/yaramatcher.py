@@ -193,7 +193,8 @@ class YaraMatcher(Karton):
                 yara_matches = self.scan_sample(sample.content)
                 # For sample type, use sha256 as the filename
                 for rule in yara_matches:
-                    matches_dict[rule] = [sample.metadata["sha256"]]
+                    assert sample.sha256 is not None
+                    matches_dict[rule] = [sample.sha256]
         elif headers["type"] == "analysis":
             if headers["kind"] == "drakrun":
                 matches_dict = self.process_drakrun(task)
